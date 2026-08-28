@@ -38,6 +38,7 @@ export default function App() {
       role: "user",
       question: q,
       answer: "",
+      status: "생각 중...",
       hits: [],
       weakEvidence: false,
       judge: null,
@@ -57,7 +58,7 @@ export default function App() {
 
       setTurns((prev) => {
         const next = [...prev];
-        next[idx] = { ...next[idx], hits, weakEvidence };
+        next[idx] = { ...next[idx], hits, weakEvidence, status: "답변 작성 중..." };
         return next;
       });
 
@@ -156,7 +157,7 @@ export default function App() {
         {turns.map((t, i) => (
           <div className="turn" key={i}>
             <div className="question">Q. {t.question}</div>
-            <div className="answer">{t.answer || "..."}</div>
+            <div className="answer">{t.answer || <span className="thinking">{t.status}</span>}</div>
 
             {t.weakEvidence && <div className="weak-warning">⚠ 약한 근거 — 질문과 완전히 맞는 자료가 아닐 수 있습니다.</div>}
 

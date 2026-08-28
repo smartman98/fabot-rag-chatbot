@@ -25,6 +25,7 @@ export type ChatTurn = {
   role: "user" | "assistant";
   question: string;
   answer: string;
+  status: string;
   hits: SearchHit[];
   weakEvidence: boolean;
   judge: JudgeResult | null;
