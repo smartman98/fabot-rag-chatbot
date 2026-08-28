@@ -1,0 +1,74 @@
+[
+  {
+    "id": "FB-001",
+    "text": "FABOT 투자 신호·잔고 안내 챗봇은 사용자에게 오늘의 F&G(공포·탐욕) 지수 신호, 특정 종목의 쿨다운(재매수 제한) 상태, 계좌 잔고와 수익 현황을 조회해서 안내하는 것이 목적이다. 조회 도구로 확인한 사실만 답하고, 미래 주가·수익률을 예측하거나 지금 사라·팔라는 투자 결정을 대신 내리지 않는다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/design-packet.md",
+    "section": "① 시스템 지시 초안"
+  },
+  {
+    "id": "FB-002",
+    "text": "TQQQ 매수 규칙: F&G 지수가 25 이하이면 실탄의 25%를 매수한다. 20 이하이면 50%, 15 이하이면 100%를 매수한다. 매수 후 3거래일 쿨다운이 적용된다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/my-agent/rag_strategy_search.py",
+    "section": "STRATEGY_RULES — TQQQ 매수"
+  },
+  {
+    "id": "FB-003",
+    "text": "TQQQ 매도 규칙: F&G 지수가 75 이상이면 보유분의 50%를 매도한다. 80 이상이면 남은 보유분 전량을 매도한다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/my-agent/rag_strategy_search.py",
+    "section": "STRATEGY_RULES — TQQQ 매도"
+  },
+  {
+    "id": "FB-004",
+    "text": "커버드콜 추가매수 규칙: F&G 지수가 35에서 65 사이(평시 구간)이면 실탄의 10%를 커버드콜(TIGER 배당커버드콜액티브)에 투입한다. 매수 후 3거래일 쿨다운이 적용된다. 노는 실탄을 평시에도 재투자하는 이 규칙이 시뮬레이션에서 결과를 가장 크게 개선시켰다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/my-agent/rag_strategy_search.py",
+    "section": "STRATEGY_RULES — 커버드콜 추가매수"
+  },
+  {
+    "id": "FB-005",
+    "text": "비과세 배당 ETF 매집 원칙: KODEX 200, RISE 200위클리커버, TIGER 배당커버드콜액티브처럼 배당에 세금이 붙지 않는 상품은 평가손익이 마이너스여도 세후 배당수익률 관점에서 저가 매집 기회로 본다. 가격 손실보다 비과세 배당의 실질 수익 기여가 크다고 판단하는 역발상 투자 원칙이다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/my-agent/rag_strategy_search.py",
+    "section": "STRATEGY_RULES — 비과세 배당 ETF 매집"
+  },
+  {
+    "id": "FB-006",
+    "text": "배당소득 2000만원 제약: 1인 기준 연간 배당소득이 2000만원을 넘으면 15.4% 분리과세 대신 다른 소득과 합산해 누진세율이 적용되는 종합과세 대상이 되고, 건강보험료에도 영향(피부양자 자격 상실 가능성 등)을 준다. 그래서 배당을 한 사람에게 몰아주지 않고 가족 구성원 명의로 분산해서 각자 2000만원 밑으로 관리한다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/my-agent/rag_strategy_search.py",
+    "section": "STRATEGY_RULES — 배당소득 2000만원 제약"
+  },
+  {
+    "id": "FB-007",
+    "text": "이 챗봇은 도구를 조회용 5개(정형 조회 4개 + RAG 검색 1개)로만 제한했다. 챗봇의 목적은 정보를 빠르게 확인하는 것이지 대신 거래하는 것이 아니기 때문이다. 쓰기(주문 실행) 도구를 아예 넣지 않으면 권한을 잘못 준 실수라는 실패 유형 자체가 원천적으로 발생할 수 없다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/README.md",
+    "section": "설계 결정 요약"
+  },
+  {
+    "id": "FB-008",
+    "text": "실제 주문 실행 도구는 이번 과제 범위 밖이다. 다음 단계(M11 해커톤 목표)에서 별도로 설계할 때는, 주문 실행 전 반드시 사용자 확인 메시지를 한 번 더 거치는 승인 단계를 추가해야 한다. 다자간 인증·권한 분리(가족 구성원별 계좌 접근 제어)도 이번 범위에서는 다루지 않는다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/README.md",
+    "section": "실행하지 않은 것과 이유"
+  },
+  {
+    "id": "FB-009",
+    "text": "search_strategy_rule 도구를 실측해보니, 영어 전용 임베딩 모델(bge-small-en-v1.5)을 한국어 문장에 썼더니 진짜 정답 규칙이 1등이 아니라 2등으로 검색되는 한계가 있었다. 그래서 top-1이 아니라 top-2 이상을 반환하도록 설계를 바꿨다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/my-agent/tool-definition.md",
+    "section": "search_strategy_rule — 실측 한계"
+  },
+  {
+    "id": "FB-010",
+    "text": "실측 중 모델이 도구를 부르지 않고 자기 지식으로 바로 답하려 한 사례가 발견됐다. TQQQ를 존재하지 않는 별칭과 틀린 상장일로 지어내 답한 완전한 환각이었다. 그래서 조회 관련 질문에 도구 호출이 없으면 그 응답을 사용자에게 절대 보여주지 않고, 대신 확인을 위해 다시 시도해달라고만 노출하도록 하네스 차원에서 강제했다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/design-packet.md",
+    "section": "④ 오류·보류·이관 규칙"
+  },
+  {
+    "id": "FB-011",
+    "text": "같은 의도의 질문이라도 말투가 살짝 다르면 도구 호출 여부 자체가 갈릴 수 있다는 사실이 실측에서 발견됐다. 예를 들어 TQQQ는 언제 팔아야 돼는 도구 호출 없이 지어낸 답이 나왔지만, TQQQ 언제 팔아야 되니는 도구를 정상 호출해 정확한 답이 나왔다. 소형 모델일수록 지시 해석이 불안정하므로 배포 전에는 같은 의도의 여러 말투로 반복 테스트해야 한다.",
+    "url": "https://github.com/smartman98/my-service-agent/blob/main/my-agent/traces/trace-05-hallucination.txt",
+    "section": "추가 관찰 — 말투 차이"
+  },
+  {
+    "id": "FB-012",
+    "text": "커버드콜(수비 자산)은 나스닥100의 약 90%를 추종(베타 0.9)하면서 연 15%를 매달 배당한다. 2세대 커버드콜은 옛날식 상승 제한된 안전자산이 아니라 실질적으로 배당 나오는 성장자산이며, 실제 계좌 데이터로 확인됐다. TQQQ(공격 자산)는 3배 레버리지로 F&G 사이클에 따라 매매한다.",
+    "url": "https://github.com/smartman98/bis1/blob/main/도메인_업무분해_과제_1.md",
+    "section": "FABOT 전략 개요"
+  }
+]

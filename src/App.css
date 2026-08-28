@@ -1,0 +1,173 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  background: #0f1115;
+  color: #e8e8ee;
+}
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.intro h1 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.intro p {
+  font-size: 0.9rem;
+  color: #b8bac2;
+  line-height: 1.5;
+}
+
+.conditions code {
+  background: #1c1f27;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.status-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: #1c1f27;
+}
+.badge.ok { background: #17301f; color: #6fd68a; }
+.badge.warn { background: #362019; color: #f0a05a; }
+
+.retry {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #444;
+  background: transparent;
+  color: #e8e8ee;
+  cursor: pointer;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.turn {
+  background: #171922;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.question {
+  font-weight: 600;
+  color: #cfd2ff;
+}
+
+.answer {
+  white-space: pre-wrap;
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.weak-warning {
+  font-size: 0.8rem;
+  color: #f0a05a;
+  background: #362019;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #0f1115;
+  background: #8fd3ff;
+}
+.chip.bm25 { background: #ffd98f; }
+
+.judge-badge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: #9a9ca6;
+}
+.judge-badge .ok { color: #6fd68a; }
+.judge-badge .warn { color: #f0a05a; }
+.judge-badge .info { color: #8fd3ff; }
+.judge-badge .score { font-weight: 700; color: #e8e8ee; }
+.judge-badge .comment { flex-basis: 100%; }
+
+.judge-error {
+  font-size: 0.72rem;
+  color: #f0a05a;
+}
+
+.feedback button {
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 6px;
+  margin-right: 0.4rem;
+  cursor: pointer;
+  padding: 0.15rem 0.5rem;
+}
+.feedback button.active {
+  border-color: #8fd3ff;
+}
+
+.composer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #0f1115;
+  border-top: 1px solid #23262f;
+}
+
+.composer input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #171922;
+  color: #e8e8ee;
+}
+
+.composer button {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: #4f6df5;
+  color: white;
+  cursor: pointer;
+}
