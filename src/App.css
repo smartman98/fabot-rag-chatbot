@@ -107,6 +107,17 @@ body {
   border-radius: 8px;
 }
 
+.evidence-toggle {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: transparent;
+  color: #9a9ca6;
+  cursor: pointer;
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;

@@ -9,11 +9,55 @@ const MODEL_ID = "onnx-community/embeddinggemma-300m-ONNX";
 const MODEL_BASE = `https://huggingface.co/${MODEL_ID}/resolve/main/onnx`;
 const MODEL_URL = `${MODEL_BASE}/model_no_gather_q4.onnx`;
 const MODEL_DATA_URL = `${MODEL_BASE}/model_no_gather_q4.onnx_data`;
+const CACHE_NAME = "fabot-embed-model-v1";
 
 let tokenizerPromise: ReturnType<typeof AutoTokenizer.from_pretrained> | null = null;
 let sessionPromise: Promise<ort.InferenceSession> | null = null;
 
-export type EmbedProgress = { status: "loading-tokenizer" | "loading-model" | "ready" };
+export type EmbedProgress =
+  | { status: "loading-tokenizer" }
+  | { status: "loading-model"; percent: number; fromCache: boolean }
+  | { status: "ready" };
+
+// Cache Storage에 이미 받아둔 파일이 있으면 그대로 쓰고, 없으면 다운받으며
+// 실측 진행률(%)을 콜백으로 보고한 뒤 다음 방문을 위해 캐시에 저장한다.
+async function fetchWithCache(url: string, onProgress: (received: number, total: number) => void): Promise<ArrayBuffer> {
+  const cache = await caches.open(CACHE_NAME).catch(() => null);
+
+  if (cache) {
+    const cached = await cache.match(url).catch(() => undefined);
+    if (cached) return cached.arrayBuffer();
+  }
+
+  const res = await fetch(url);
+  if (!res.ok || !res.body) throw new Error(`파일을 받지 못했습니다: ${url}`);
+  const total = Number(res.headers.get("content-length")) || 0;
+
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    onProgress(received, total);
+  }
+
+  const buffer = new Uint8Array(received);
+  let offset = 0;
+  for (const chunk of chunks) {
+    buffer.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  if (cache) {
+    // 캐시 저장이 실패해도(브라우저 저장공간 제한 등) 이번 로드는 그대로 진행한다.
+    await cache.put(url, new Response(buffer, { headers: { "content-length": String(received) } })).catch(() => {});
+  }
+
+  return buffer.buffer;
+}
 
 export async function loadEmbedder(onProgress?: (p: EmbedProgress) => void) {
   onProgress?.({ status: "loading-tokenizer" });
@@ -22,13 +66,31 @@ export async function loadEmbedder(onProgress?: (p: EmbedProgress) => void) {
   }
   const tokenizer = await tokenizerPromise;
 
-  onProgress?.({ status: "loading-model" });
   if (!sessionPromise) {
     sessionPromise = (async () => {
+      // model_no_gather_q4.onnx_data(약 195MB)가 전체 다운로드의 대부분을 차지하므로
+      // 그 진행률을 그대로 전체 진행률로 보여준다.
+      let dataTotal = 0;
+      let dataReceived = 0;
+      let cacheHit = true;
+
+      const report = () => {
+        const percent = dataTotal ? Math.min(100, Math.round((dataReceived / dataTotal) * 100)) : 0;
+        onProgress?.({ status: "loading-model", percent, fromCache: cacheHit });
+      };
+
       const [modelBuf, dataBuf] = await Promise.all([
-        fetch(MODEL_URL).then((r) => r.arrayBuffer()),
-        fetch(MODEL_DATA_URL).then((r) => r.arrayBuffer()),
+        fetchWithCache(MODEL_URL, () => {}),
+        fetchWithCache(MODEL_DATA_URL, (received, total) => {
+          cacheHit = false;
+          dataReceived = received;
+          dataTotal = total;
+          report();
+        }),
       ]);
+
+      onProgress?.({ status: "loading-model", percent: 100, fromCache: cacheHit });
+
       return ort.InferenceSession.create(new Uint8Array(modelBuf), {
         executionProviders: ["wasm"],
         externalData: [{ path: "model_no_gather_q4.onnx_data", data: new Uint8Array(dataBuf) }],
@@ -63,8 +125,8 @@ function meanPoolAndNormalize(hidden: Float32Array, dims: readonly number[], mas
   return Array.from(pooled, (v) => v / norm);
 }
 
-export async function embedQuery(text: string): Promise<number[]> {
-  const { tokenizer, session } = await loadEmbedder();
+export async function embedQuery(text: string, onProgress?: (p: EmbedProgress) => void): Promise<number[]> {
+  const { tokenizer, session } = await loadEmbedder(onProgress);
   const encoded = tokenizer(text, { padding: true, truncation: true });
 
   const inputIds = encoded.input_ids;

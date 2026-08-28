@@ -1,19 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { loadDocs } from "./lib/docs";
-import { embedQuery, type EmbedProgress } from "./lib/embed";
+import { embedQuery } from "./lib/embed";
 import { hybridSearch } from "./lib/search";
 import { buildPrompt } from "./lib/prompt";
 import { checkOllamaStatus, streamChat, OLLAMA_MODEL } from "./lib/ollama";
 import { judgeAnswer } from "./lib/judge";
 import type { ChatTurn, FabotChunk } from "./lib/types";
 
-type EmbedStatus = EmbedProgress["status"] | "idle" | "error";
-
 export default function App() {
   const [docs, setDocs] = useState<FabotChunk[] | null>(null);
   const [ollamaUp, setOllamaUp] = useState<boolean | null>(null);
-  const [embedStatus, setEmbedStatus] = useState<EmbedStatus>("idle");
+  const [embedLabel, setEmbedLabel] = useState("대기 중");
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
@@ -44,14 +42,34 @@ export default function App() {
       judge: null,
       judgeError: false,
       feedback: null,
+      showEvidence: false,
     };
     setTurns((prev) => [...prev, turn]);
     const idx = turns.length;
 
+    const setStatus = (status: string) => {
+      setTurns((prev) => {
+        const next = [...prev];
+        next[idx] = { ...next[idx], status };
+        return next;
+      });
+    };
+
     try {
-      setEmbedStatus("loading-tokenizer");
-      const queryVector = await embedQuery(q);
-      setEmbedStatus("ready");
+      setEmbedLabel("준비 중");
+      const queryVector = await embedQuery(q, (p) => {
+        if (p.status === "loading-tokenizer") {
+          setStatus("생각 중...");
+          setEmbedLabel("준비 중");
+        } else if (p.status === "loading-model") {
+          const label = p.fromCache ? "준비 중" : `AI 모델 받는 중... ${p.percent}% (처음 한 번만)`;
+          setStatus(p.fromCache ? "생각 중..." : `AI 모델을 처음 받는 중이에요... ${p.percent}%`);
+          setEmbedLabel(label);
+        } else {
+          setStatus("생각 중...");
+          setEmbedLabel("준비됨");
+        }
+      });
 
       const hits = hybridSearch(queryVector, q, docs);
       const { prompt, weakEvidence } = buildPrompt(q, hits);
@@ -117,6 +135,14 @@ export default function App() {
     abortRef.current?.abort();
   }
 
+  function toggleEvidence(idx: number) {
+    setTurns((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], showEvidence: !next[idx].showEvidence };
+      return next;
+    });
+  }
+
   function setFeedback(idx: number, fb: "up" | "down") {
     setTurns((prev) => {
       const next = [...prev];
@@ -149,7 +175,7 @@ export default function App() {
           <span className={`badge ${docs ? "ok" : "warn"}`}>
             문서: {docs ? `${docs.length}개 로드됨` : "로딩 중"}
           </span>
-          <span className="badge">임베딩 상태: {embedStatus}</span>
+          <span className="badge">임베딩: {embedLabel}</span>
         </div>
       </header>
 
@@ -162,20 +188,27 @@ export default function App() {
             {t.weakEvidence && <div className="weak-warning">⚠ 약한 근거 — 질문과 완전히 맞는 자료가 아닐 수 있습니다.</div>}
 
             {t.hits.length > 0 && (
-              <div className="chips">
-                {t.hits.map((h) => (
-                  <a
-                    key={h.chunk.id + h.method}
-                    className={`chip ${h.method}`}
-                    href={h.chunk.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    title={h.chunk.section}
-                  >
-                    {h.chunk.id} · {h.method} · {h.score.toFixed(2)}
-                  </a>
-                ))}
-              </div>
+              <>
+                <button className="evidence-toggle" onClick={() => toggleEvidence(i)}>
+                  {t.showEvidence ? "근거 숨기기 ▴" : "근거 보기 ▾"}
+                </button>
+                {t.showEvidence && (
+                  <div className="chips">
+                    {t.hits.map((h) => (
+                      <a
+                        key={h.chunk.id + h.method}
+                        className={`chip ${h.method}`}
+                        href={h.chunk.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={h.chunk.section}
+                      >
+                        {h.chunk.id} · {h.method} · {h.score.toFixed(2)}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
             {t.judge && (

@@ -31,4 +31,5 @@ export type ChatTurn = {
   judge: JudgeResult | null;
   judgeError: boolean;
   feedback: "up" | "down" | null;
+  showEvidence: boolean;
 };
