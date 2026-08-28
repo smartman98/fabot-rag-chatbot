@@ -2940,7 +2940,7 @@ ${e}`,weakEvidence:n}}var LH=`http://localhost:11434`,RH=`qwen3.5:2b`;async func
 grounded: 답변 내용이 근거자료에서 나왔는가 (true/false)
 noHalluc: 근거에 없는 사실을 지어내지 않았는가 (true/false)
 cited: 답변 안에 근거 조각의 [ID] 표시가 있는가 (true/false)
-refusal: 근거에 답이 없어서 '없다'고 답한 경우 true, 그 외 false
+refusal: 질문이 자료 범위 밖이거나(날씨·예측 등) 챗봇 권한 밖(주문 실행, 타인 정보 등)이라 답을 하지 않고 거절/제한 안내를 한 경우 true. "제공된 정보가 없습니다", "저는 ~할 수 없습니다", "관련 규정이 없습니다"처럼 이유를 설명하며 거절한 경우도 포함한다. 실제로 자료 내용을 근거로 답한 경우만 false.
 score: 0-100 정수 (grounded·noHalluc·cited 반영)
 comment: 한두 문장 평어 (한국어)
 출력 형식: {"grounded":bool,"noHalluc":bool,"cited":bool,"refusal":bool,"score":int,"comment":"..."} — JSON 외 텍스트 금지.
