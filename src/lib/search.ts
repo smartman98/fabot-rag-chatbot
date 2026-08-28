@@ -48,12 +48,14 @@ function bm25Scores(query: string, chunks: FabotChunk[]): number[] {
   });
 }
 
-// 코사인 상위 10개를 먼저 고르고, 아직 없는 청크 중 BM25 상위 5개를 추가한다.
+// 코사인 상위 5개를 먼저 고르고, 아직 없는 청크 중 BM25 상위 3개를 추가한다.
+// 코퍼스가 12개뿐이라 상위 10+5로는 사실상 전체를 프롬프트에 다 넣게 되어,
+// 답변 속도만 늦추고 관련성 낮은 근거까지 섞였다 — 그래서 5+3으로 줄였다.
 export function hybridSearch(queryVector: number[], query: string, chunks: FabotChunk[]): SearchHit[] {
   const cosineRanked = chunks
     .map((chunk) => ({ chunk, score: cosine(queryVector, chunk.vector), method: "vector" as const }))
     .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
+    .slice(0, 5);
 
   const picked = new Set(cosineRanked.map((h) => h.chunk.id));
   const bm25Raw = bm25Scores(query, chunks);
@@ -63,7 +65,7 @@ export function hybridSearch(queryVector: number[], query: string, chunks: Fabot
     .map((chunk, i) => ({ chunk, score: bm25Raw[i] / maxBm25, method: "bm25" as const }))
     .filter((h) => !picked.has(h.chunk.id) && h.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+    .slice(0, 3);
 
   return [...cosineRanked, ...bm25Ranked];
 }

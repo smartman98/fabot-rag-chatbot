@@ -82,20 +82,24 @@ export default function App() {
         });
       }, controller.signal);
 
-      try {
-        const judge = await judgeAnswer(q, hits, answer);
-        setTurns((prev) => {
-          const next = [...prev];
-          next[idx] = { ...next[idx], judge };
-          return next;
+      // 답변이 나오면 바로 다음 질문을 할 수 있게 하고, 판정은 화면 뒤에서 계속 진행한다.
+      setBusy(false);
+      abortRef.current = null;
+      judgeAnswer(q, hits, answer)
+        .then((judge) => {
+          setTurns((prev) => {
+            const next = [...prev];
+            next[idx] = { ...next[idx], judge };
+            return next;
+          });
+        })
+        .catch(() => {
+          setTurns((prev) => {
+            const next = [...prev];
+            next[idx] = { ...next[idx], judgeError: true };
+            return next;
+          });
         });
-      } catch {
-        setTurns((prev) => {
-          const next = [...prev];
-          next[idx] = { ...next[idx], judgeError: true };
-          return next;
-        });
-      }
     } catch (err) {
       setTurns((prev) => {
         const next = [...prev];
