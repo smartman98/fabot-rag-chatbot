@@ -8,6 +8,21 @@ import { checkOllamaStatus, streamChat, OLLAMA_MODEL } from "./lib/ollama";
 import { judgeAnswer } from "./lib/judge";
 import type { ChatTurn, FabotChunk } from "./lib/types";
 
+const EXAMPLE_QUESTIONS = [
+  "TQQQ 매수 조건이 뭐야?",
+  "TQQQ는 언제 팔아야 해?",
+  "커버드콜은 언제 얼마나 추가로 사?",
+  "비과세 배당 ETF는 손실나도 왜 사는거야?",
+  "배당소득 2000만원 넘으면 어떻게 돼?",
+  "커버드콜 베타가 얼마야?",
+  "TQQQ랑 커버드콜 역할이 어떻게 달라?",
+  "이 챗봇은 실제 주문도 실행해?",
+  "전략 규칙 검색은 어떻게 하는거야?",
+  "그냥 지금 다 팔아줘",
+  "내일 나스닥 오를까?",
+  "내일 날씨 어때?",
+];
+
 export default function App() {
   const [docs, setDocs] = useState<FabotChunk[] | null>(null);
   const [ollamaUp, setOllamaUp] = useState<boolean | null>(null);
@@ -26,8 +41,8 @@ export default function App() {
     setOllamaUp(await checkOllamaStatus());
   }
 
-  async function handleAsk() {
-    const q = question.trim();
+  async function handleAsk(override?: string) {
+    const q = (override ?? question).trim();
     if (!q || busy || !docs) return;
     setQuestion("");
     setBusy(true);
@@ -177,6 +192,17 @@ export default function App() {
           </span>
           <span className="badge">임베딩: {embedLabel}</span>
         </div>
+
+        <div className="examples">
+          <p className="examples-label">예시 질문 (눌러보세요)</p>
+          <div className="example-list">
+            {EXAMPLE_QUESTIONS.map((eq) => (
+              <button key={eq} className="example-chip" onClick={() => handleAsk(eq)} disabled={busy || !docs}>
+                {eq}
+              </button>
+            ))}
+          </div>
+        </div>
       </header>
 
       <main className="chat">
@@ -252,7 +278,7 @@ export default function App() {
         {busy ? (
           <button onClick={handleStop}>중지</button>
         ) : (
-          <button onClick={handleAsk} disabled={!docs}>
+          <button onClick={() => handleAsk()} disabled={!docs}>
             질문
           </button>
         )}
