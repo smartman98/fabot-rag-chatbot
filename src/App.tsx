@@ -190,7 +190,9 @@ export default function App() {
           <span className={`badge ${docs ? "ok" : "warn"}`}>
             문서: {docs ? `${docs.length}개 로드됨` : "로딩 중"}
           </span>
-          <span className="badge">임베딩: {embedLabel}</span>
+          <span className={`badge ${embedLabel === "준비됨" ? "ok" : embedLabel === "대기 중" ? "" : "warn"}`}>
+            임베딩: {embedLabel}
+          </span>
         </div>
 
         <div className="examples">
